@@ -1,0 +1,32 @@
+
+[BandMedal
+  RessourceFile="./impact.ttf"
+  String="NoNameDefined"
+  BoxSize=400,100
+  Origin=0,0
+  Position=0,0
+  GlyphSize=50,50
+  HorizontalAlign="Middle"
+  VerticalAlign="Middle"
+  Color=0xFFFFFFFF
+  OutlineColor=0x000000
+  OutlineSize=3
+]
+
+[Medal
+  Corner = 3
+'  Texture = "./carrelage.png"
+  Rotation = 90
+  BorderColor = 255, 0, 0
+  BorderWidth = 0.15
+  InsideColor = 0, 255, 0
+  MiddleColor = 0, 0, 255
+  Shift = 0, -60
+  CenterShift = 0, -50
+  Scale = 1.1, 1.3
+
+  IconColor = 255, 255, 255
+  IconRotation = 0
+  IconScale = 1, 1
+]
+
