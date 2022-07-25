@@ -1,7 +1,7 @@
 
 [BandMedal
   RessourceFile="./impact.ttf"
-  String="NoNameDefined"
+  String=""
   ColorMask = 255, 255, 255
   BoxSize=400,100
   Origin=0,0
@@ -29,11 +29,11 @@
 
   [Label
     RessourceFile="./impact.ttf"
-    String="NoNameDefined"
+    String=""
     ColorMask = 255, 255, 255
-    BoxSize=400,100
+    BoxSize=400,400
     Origin=0,0
-    Position=0,0
+    Position=0,-50
     GlyphSize=50,50
     HorizontalAlign="Middle"
     VerticalAlign="Middle"
