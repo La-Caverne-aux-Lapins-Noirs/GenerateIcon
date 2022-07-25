@@ -1,0 +1,46 @@
+
+[BandMedal
+  @insert "band/"
+
+  RessourceFile = @"./res/futura.ttf"
+  ColorMask = 255, 255, 255
+  BoxSize = 400, 100
+  GlyphSize = 50, 50
+  HorizontalAlign = "Middle"
+  VerticalAlign = "Middle"
+  Color = 0xFFFFFFFF
+  OutlineColor = 0x000000
+  OutlineSize = 3
+]
+
+[Medal
+  @insert "pins/"
+
+  BorderColor = 240, 240, 240
+  BorderWidth = 0.12
+  InsideColor = 32, 32, 32
+  MiddleColor = 0, 0, 0
+  Shift = 0, 0
+  CenterShift = 0, 0
+  Scale = 1, 1
+
+  [Label
+    RessourceFile = @"./res/impact.ttf"
+    ColorMask = 255, 255, 255
+    BoxSize = 400, 400
+    Origin = 0, 0
+    Position= 0, 0
+    GlyphSize = 50, 50
+    HorizontalAlign = "Middle"
+    VerticalAlign = "Middle"
+    Color = 0xFFFFFFFF
+    OutlineColor = 0x000000
+    OutlineSize = 3
+  ]
+
+  IconColor = 255, 255, 255
+  IconRotation = 0
+  IconScale = 0.75, 0.75
+  IconShift = 0, 0
+]
+

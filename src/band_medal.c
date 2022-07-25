@@ -27,6 +27,7 @@ int		band_medal(t_bunny_configuration	*cnf,
       return (EXIT_FAILURE);
     }
 
+  bunny_configuration_setf(tbox, (int)pic->buffer.height, "BoxSize[1]");
   t_bunny_font	*fnt = bunny_read_textbox(tbox);
 
   if (!fnt)

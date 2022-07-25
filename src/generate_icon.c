@@ -22,6 +22,8 @@ int			generate_icon(t_bunny_configuration	*cnf,
 
   if (strcmp(type, "band") == 0)
     ret = band_medal(cnf, pic = bunny_new_picture(400, 100), medal);
+  else if (strcmp(type, "sband") == 0)
+    ret = band_medal(cnf, pic = bunny_new_picture(400, 400), medal);
   else
     // Médaille médaille
     ret = round_medal(cnf, pic = bunny_new_picture(400, 400), medal);

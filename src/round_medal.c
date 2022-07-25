@@ -173,10 +173,13 @@ int			round_medal(t_bunny_configuration	*cnf,
 	}
       if (medal->label)
 	fnt->string = bunny_strdup(medal->label);
-      for (int i = 0; fnt->string[i]; ++i)
-	((char*)fnt->string)[i] = toupper(fnt->string[i]);
-      bunny_draw(&fnt->clipable);
-      bunny_blit(&pic->buffer, &fnt->clipable, NULL);
+      if (fnt->string)
+	{
+	  for (int i = 0; fnt->string[i]; ++i)
+	    ((char*)fnt->string)[i] = toupper(fnt->string[i]);
+	  bunny_draw(&fnt->clipable);
+	  bunny_blit(&pic->buffer, &fnt->clipable, NULL);
+	}
     }
 
   return (EXIT_SUCCESS);
