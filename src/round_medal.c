@@ -7,6 +7,7 @@
 ** Medal Generator
 */
 
+#include		<ctype.h>
 #include		<math.h>
 #include		"genicon.h"
 
@@ -47,20 +48,19 @@ void			shape(t_bunny_picture			*pic,
   bunny_set_geometry(&pic->buffer, BGY_TRIANGLE_FAN, (t_bunny_vertex_array*)va, texture);
 }
 
-int			medal(t_bunny_configuration		*cnf,
-			      t_bunny_picture			*pic,
-			      const char			*picfile,
-			      const char			*spec)
+int			round_medal(t_bunny_configuration	*cnf,
+				    t_bunny_picture		*pic,
+				    t_medal			*medal)
 {
   t_bunny_configuration *tbox = NULL;
   t_bunny_picture	*icon = NULL;
 
   bunny_clear(&pic->buffer, 0);
-  if (picfile)
-    icon = bunny_load_picture(picfile);
+  if (medal->picfile)
+    icon = bunny_load_picture(medal->picfile);
   // Dessin du texte
-  if (spec != NULL)
-    bunny_configuration_getf(cnf, &tbox, "Medal[%s]", spec);
+  if (medal->specificator != NULL)
+    bunny_configuration_getf(cnf, &tbox, "Medal[%s]", medal->specificator);
   else
     bunny_configuration_getf(cnf, &tbox, "Medal");
   if (!tbox)
@@ -77,20 +77,22 @@ int			medal(t_bunny_configuration		*cnf,
   t_bunny_color		middle_color = {.full = BLACK};
   const char		*texture_file = NULL;
   t_bunny_picture	*texture = NULL;
-  t_bunny_position	shift;
-  t_bunny_position	cshift;
+  t_bunny_position	shift = {0, 0};
+  t_bunny_position	cshift = {0, 0};
   t_bunny_position	texmiddle;
   t_bunny_position	medmiddle =
     {
      pic->buffer.width / 2,
      pic->buffer.height / 2
     };
-  t_bunny_accurate_position scale;
+  t_bunny_accurate_position scale = {1.0, 1.0};
 
   bunny_configuration_getf(tbox, &corner, "Corner");
   if (corner > 126)
     corner = 126;
-  if (bunny_configuration_getf(tbox, &texture_file, "Texture"))
+  texture_file = medal->texfile;
+  bunny_configuration_getf(tbox, &texture_file, "Texture");
+  if (texture_file)
     if ((texture = bunny_load_picture(texture_file)))
       {
 	texmiddle.x = texture->buffer.width / 2;
@@ -117,6 +119,9 @@ int			medal(t_bunny_configuration		*cnf,
   va->vertex[0].tex.x = texmiddle.x;
   va->vertex[0].tex.y = texmiddle.y;
 
+  // Il serait sympathique de pouvoir préciser les coordonnées dans la conf
+  // pour ne pas faire que des formes régulières... comme "l'oeil" d'avant.
+
   // D'abord on fait la forme en noir
   va->vertex[0].color = BLACK;
   shape(pic, corner, va, &medmiddle, &texmiddle, NULL, BLACK, 1.0, rot, &shift, &scale);
@@ -130,13 +135,17 @@ int			medal(t_bunny_configuration		*cnf,
   // L'icone
   if (icon != NULL)
     {
+      t_bunny_position ishift = {0, 0};
+
+      bunny_configuration_getf(tbox, &ishift.x, "IconShift[0]");
+      bunny_configuration_getf(tbox, &ishift.y, "IconShift[1]");
       bunny_configuration_getf(tbox, &icon->rotation, "IconRotation");
       bunny_configuration_getf(tbox, &icon->scale.x, "IconScale[0]");
       bunny_configuration_getf(tbox, &icon->scale.y, "IconScale[1]");
       icon->origin.x = icon->buffer.width / 2;
       icon->origin.y = icon->buffer.height / 2;
-      icon->position.x = pic->buffer.width / 2;
-      icon->position.y = pic->buffer.height / 2;
+      icon->position.x = pic->buffer.width / 2 + ishift.x;
+      icon->position.y = pic->buffer.height / 2 + ishift.y;
       // Un léger contour noir à l'icone
       icon->color_mask.full = BLACK;
       icon->scale.x += 0.01;
@@ -148,6 +157,26 @@ int			medal(t_bunny_configuration		*cnf,
       if (bunny_color_configuration("IconColor", &icon->color_mask, tbox) == false)
 	icon->color_mask.full = WHITE;
       bunny_blit(&pic->buffer, icon, NULL);
+
+      // Il serait sympathique d'avoir une propriété "KeepInside", permettant
+      // d'imposer la bordure sur l'icone, au lieu de permettre à l'icone de déborder,
+      // en fonction des dessins...
+    }
+  if (bunny_configuration_getf(tbox, &tbox, "Label"))
+    {
+      t_bunny_font	*fnt = bunny_read_textbox(tbox);
+
+      if (!fnt)
+	{
+	  fprintf(stderr, "Cannot load Label node.\n");
+	  return (EXIT_FAILURE);
+	}
+      if (medal->label)
+	fnt->string = bunny_strdup(medal->label);
+      for (int i = 0; fnt->string[i]; ++i)
+	((char*)fnt->string)[i] = toupper(fnt->string[i]);
+
+      bunny_blit(&pic->buffer, &fnt->clipable, NULL);
     }
 
   return (EXIT_SUCCESS);

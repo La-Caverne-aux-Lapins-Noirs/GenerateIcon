@@ -12,20 +12,24 @@
 # include		<stdio.h>
 # include		<lapin.h>
 
+typedef struct		s_medal
+{
+  const char		*name;
+  const char		*picfile;
+  const char		*texfile;
+  const char		*specificator;
+  const char		*label;
+}			t_medal;
+
 int			generate_icon(t_bunny_configuration	*cnf,
 				      const char		*type,
-				      const char		*medal_name,
-				      const char		*pic,
-				      const char		*specificator);
-
+				      t_medal			*medal);
 int			band_medal(t_bunny_configuration	*cnf,
 				   t_bunny_picture		*pic,
-				   const char			*medal_name,
-				   const char			*spec);
-int			medal(t_bunny_configuration		*cnf,
-			      t_bunny_picture			*pic,
-			      const char			*picfile,
-			      const char			*spec);
+				   t_medal			*medal);
+int			round_medal(t_bunny_configuration	*cnf,
+				    t_bunny_picture		*pic,
+				    t_medal			*medal);
 
 extern unsigned int	gl_colors[6];
 

@@ -7,26 +7,33 @@
 ** Medal Generator
 */
 
+#define			_POSIX_C_SOURCE				199309L
+#include		<time.h>
 #include		"genicon.h"
 
 int			generate_icon(t_bunny_configuration	*cnf,
 				      const char		*type,
-				      const char		*medal_name,
-				      const char		*picfile,
-				      const char		*specificator)
+				      t_medal			*medal)
 {
+  char			buffer[128];
+  char			cmd[512];
   t_bunny_picture	*pic;
   int			ret;
 
   if (strcmp(type, "band") == 0)
-    ret = band_medal(cnf, pic = bunny_new_picture(400, 100), medal_name, specificator);
+    ret = band_medal(cnf, pic = bunny_new_picture(400, 100), medal);
   else
     // Médaille médaille
-    ret = medal(cnf, pic = bunny_new_picture(400, 400), picfile, specificator);
+    ret = round_medal(cnf, pic = bunny_new_picture(400, 400), medal);
   if (ret == 0)
     {
-      bunny_save_picture(pic, ".outputgenicon.png");
-      // system("cat .outputgenicon.png ; rm -f .outputgenicon.png");
+      struct timespec ts;
+
+      clock_gettime(CLOCK_MONOTONIC, &ts);
+      snprintf(&buffer[0], sizeof(buffer), ".output%zu.png", ts.tv_sec + ts.tv_nsec);
+      bunny_save_picture(pic, buffer);
+      snprintf(&cmd[0], sizeof(cmd), "cat %s ; rm -f %s", buffer, buffer);
+      system(cmd);
     }
   return (ret);
 }

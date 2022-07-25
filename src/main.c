@@ -38,7 +38,7 @@ int		main(int			argc,
     }
 
   bunny_enable_full_blit(true);
-  
+
   // Récupérer des infos dans la BDD, c'est plutot le boulot de PHP.
   if (strcmp(argv[1], "get") == 0)
     {
@@ -60,6 +60,12 @@ int		main(int			argc,
       fprintf(stderr, "%s: Cannot load configuration file %s.\n", argv[0], opt);
       return (EXIT_FAILURE);
     }
-  return (generate_icon(cnf, argv[2], argv[3], fetch_param(argc, argv, "-p"), fetch_param(argc, argv, "-s")));
-}
+  t_medal	medal;
 
+  medal.name = argv[3];
+  medal.picfile = fetch_param(argc, argv, "-p");
+  medal.specificator = fetch_param(argc, argv, "-s");
+  medal.label = fetch_param(argc, argv, "-l");
+  medal.texfile = fetch_param(argc, argv, "-t");
+  return (generate_icon(cnf, argv[2], &medal));
+}

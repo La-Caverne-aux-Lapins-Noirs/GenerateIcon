@@ -12,14 +12,13 @@
 
 int		band_medal(t_bunny_configuration	*cnf,
 			   t_bunny_picture		*pic,
-			   const char			*medal_name,
-			   const char			*spec)
+			   t_medal			*medal)
 {
   t_bunny_configuration *tbox = NULL;
 
   // Dessin du texte
-  if (spec != NULL)
-    bunny_configuration_getf(cnf, &tbox, "BandMedal[%s]", spec);
+  if (medal->specificator != NULL)
+    bunny_configuration_getf(cnf, &tbox, "BandMedal[%s]", medal->specificator);
   else
     bunny_configuration_getf(cnf, &tbox, "BandMedal");
   if (!tbox)
@@ -27,6 +26,7 @@ int		band_medal(t_bunny_configuration	*cnf,
       fprintf(stderr, "Missing BandMedal node in configuration.\n");
       return (EXIT_FAILURE);
     }
+
   t_bunny_font	*fnt = bunny_read_textbox(tbox);
 
   if (!fnt)
@@ -34,12 +34,15 @@ int		band_medal(t_bunny_configuration	*cnf,
       fprintf(stderr, "Cannot load BandMedal node.\n");
       return (EXIT_FAILURE);
     }
-  fnt->string = bunny_strdup(medal_name);
+  if (medal->label)
+    fnt->string = bunny_strdup(medal->label);
+  else
+    fnt->string = bunny_strdup(medal->name);
   for (int i = 0; fnt->string[i]; ++i)
     ((char*)fnt->string)[i] = toupper(fnt->string[i]);
 
   // Dessin des bandes
-  t_bunny_hash	res = bunny_hash(BH_DJB2, medal_name, strlen(medal_name));
+  t_bunny_hash	res = bunny_hash(BH_DJB2, medal->name, strlen(medal->name));
   unsigned int	cols[6];
 
   srand(res);
@@ -66,6 +69,26 @@ int		band_medal(t_bunny_configuration	*cnf,
   pic->position.x = 0;
   pic->position.y = 0;
   pic->clip_width = pic->buffer.width;
+
+  // Une texture par dessus les couleurs?
+  if (medal->texfile)
+    {
+      int		transparency = 255;
+      t_bunny_picture *tex = bunny_load_picture(medal->texfile);
+
+      bunny_configuration_getf(tbox, &transparency, "TextureTransparency");
+      if (tex == NULL)
+	{
+	  fprintf(stderr, "Cannot load %s.\n", medal->texfile);
+	  return (EXIT_FAILURE);
+	}
+      tex->origin.x = tex->buffer.width / 2;
+      tex->origin.y = tex->buffer.height / 2;
+      tex->position.x = tex->origin.x;
+      tex->position.y = tex->origin.y;
+      tex->color_mask.argb[ALPHA_CMP] = transparency;
+      bunny_blit(&pic->buffer, tex, NULL);
+    }
 
   fnt->clipable.position.y = 5;
   bunny_draw(&fnt->clipable);
