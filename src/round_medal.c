@@ -137,11 +137,11 @@ int			round_medal(t_bunny_configuration	*cnf,
     {
       t_bunny_position ishift = {0, 0};
 
-      bunny_configuration_getf(tbox, &ishift.x, "IconShift[0]");
-      bunny_configuration_getf(tbox, &ishift.y, "IconShift[1]");
-      bunny_configuration_getf(tbox, &icon->rotation, "IconRotation");
-      bunny_configuration_getf(tbox, &icon->scale.x, "IconScale[0]");
-      bunny_configuration_getf(tbox, &icon->scale.y, "IconScale[1]");
+      bunny_configuration_getf(tbox, &ishift.x, "Icon.Shift[0]");
+      bunny_configuration_getf(tbox, &ishift.y, "Icon.Shift[1]");
+      bunny_configuration_getf(tbox, &icon->rotation, "Icon.Rotation");
+      bunny_configuration_getf(tbox, &icon->scale.x, "Icon.Scale[0]");
+      bunny_configuration_getf(tbox, &icon->scale.y, "Icon.Scale[1]");
       icon->origin.x = icon->buffer.width / 2;
       icon->origin.y = icon->buffer.height / 2;
       icon->position.x = pic->buffer.width / 2 + ishift.x;
@@ -154,7 +154,7 @@ int			round_medal(t_bunny_configuration	*cnf,
       // Puis l'authentique icone
       icon->scale.x -= 0.01;
       icon->scale.y -= 0.01;
-      if (bunny_color_configuration("IconColor", &icon->color_mask, tbox) == false)
+      if (bunny_color_configuration("Icon.Color", &icon->color_mask, tbox) == false)
 	icon->color_mask.full = WHITE;
       bunny_blit(&pic->buffer, icon, NULL);
 
@@ -162,6 +162,20 @@ int			round_medal(t_bunny_configuration	*cnf,
       // d'imposer la bordure sur l'icone, au lieu de permettre à l'icone de déborder,
       // en fonction des dessins...
     }
+
+  // Des images à mettre par dessus.
+  t_bunny_configuration *ovr;
+
+  for (int i = 0; bunny_configuration_getf(tbox, &ovr, "Overlay[%d]", i); ++i)
+    {
+      t_bunny_picture *lay;
+      
+      // On charge l'image depuis ovr...
+      
+      bunny_blit(&pic->buffer, lay, NULL);
+      bunny_delete_clipable(lay);
+    }
+
   if (bunny_configuration_getf(tbox, &tbox, "Label"))
     {
       t_bunny_font	*fnt = bunny_read_textbox(tbox);

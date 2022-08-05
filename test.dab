@@ -42,9 +42,18 @@
     OutlineSize=3
   ]
 
-  IconColor = 255, 255, 255
-  IconRotation = 0
-  IconScale = 0.6, 0.6
-  IconShift = 0, -60
+  [Icon
+    Color = 255, 255, 255
+    Rotation = 0
+    Scale = 0.6, 0.6
+    Shift = 0, -60
+  ]
+  {Overlay
+    [
+      RessourceFile = ""
+      ColorMask = 255, 255, 255
+      Origin = 0, 0
+    ]
+  }
 ]
 

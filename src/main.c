@@ -33,7 +33,7 @@ int		main(int			argc,
 {
   if (argc < 3)
     {
-      fprintf(stderr, "%s: Usage is:\n\t./genicon [band | pins] medal_name [-p picture]? [-s specificator]? [-c configuration_file]?].\n\n", argv[0]);
+      fprintf(stderr, "%s: Usage is:\n\t./genicon [band | sband | pins] medal_name [-p picture]? [-s specificator]? [-c configuration_file]?].\n\n", argv[0]);
       return (EXIT_FAILURE);
     }
   bunny_enable_full_blit(true);
