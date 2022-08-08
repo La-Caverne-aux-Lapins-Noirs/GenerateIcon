@@ -13,6 +13,14 @@
   OutlineColor=0x000000
   OutlineSize=3
   TextureTransparency=128
+  {Overlay
+    [
+      RessourceFile = "./res/failed.png"
+      ColorMask = 255, 255, 255
+      Origin = 0, 0
+      UnderText = false
+    ]
+  }
 ]
 
 [Medal
@@ -29,7 +37,7 @@
 
   [Label
     RessourceFile="./impact.ttf"
-    String=""
+    String="SCHMOL"
     ColorMask = 255, 255, 255
     BoxSize=400,400
     Origin=0,0
@@ -53,6 +61,7 @@
       RessourceFile = "./res/failed.png"
       ColorMask = 255, 255, 255
       Origin = 0, 0
+      UnderText = true
     ]
   }
 ]

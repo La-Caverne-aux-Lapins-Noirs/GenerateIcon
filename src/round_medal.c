@@ -169,15 +169,21 @@ int			round_medal(t_bunny_configuration	*cnf,
   for (int i = 0; bunny_configuration_getf(tbox, &ovr, "Overlay[%d]", i); ++i)
     {
       t_bunny_picture *lay = NULL;
+      bool		undertext = false;
 
+      bunny_configuration_getf(ovr, &undertext, "UnderText");
+      if (!undertext)
+	continue ;
       bunny_set_clipable_attribute(NULL, &lay, &ovr, BCT_PICTURE);
       bunny_blit(&pic->buffer, lay, NULL);
       bunny_delete_clipable(lay);
     }
 
-  if (bunny_configuration_getf(tbox, &tbox, "Label"))
+  t_bunny_configuration *lab;
+
+  if (bunny_configuration_getf(tbox, &lab, "Label"))
     {
-      t_bunny_font	*fnt = bunny_read_textbox(tbox);
+      t_bunny_font	*fnt = bunny_read_textbox(lab);
 
       if (!fnt)
 	{
@@ -194,6 +200,20 @@ int			round_medal(t_bunny_configuration	*cnf,
 	  bunny_draw(&fnt->clipable);
 	  bunny_blit(&pic->buffer, &fnt->clipable, NULL);
 	}
+    }
+
+  // Images sur le texte
+  for (int i = 0; bunny_configuration_getf(tbox, &ovr, "Overlay[%d]", i); ++i)
+    {
+      t_bunny_picture *lay = NULL;
+      bool		undertext = false;
+
+      bunny_configuration_getf(ovr, &undertext, "UnderText");
+      if (undertext)
+	continue ;
+      bunny_set_clipable_attribute(NULL, &lay, &ovr, BCT_PICTURE);
+      bunny_blit(&pic->buffer, lay, NULL);
+      bunny_delete_clipable(lay);
     }
 
   return (EXIT_SUCCESS);

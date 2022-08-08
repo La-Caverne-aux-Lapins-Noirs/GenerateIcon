@@ -92,23 +92,40 @@ int		band_medal(t_bunny_configuration	*cnf,
       bunny_blit(&pic->buffer, tex, NULL);
     }
 
-  // Des images à mettre par dessus.
+  // Des images à mettre par dessus, mais sous le texte
   t_bunny_configuration *ovr;
 
   for (int i = 0; bunny_configuration_getf(tbox, &ovr, "Overlay[%d]", i); ++i)
     {
       t_bunny_picture *lay = NULL;
+      bool		undertext = false;
 
+      bunny_configuration_getf(ovr, &undertext, "UnderText");
+      if (!undertext)
+	continue ;
       bunny_set_clipable_attribute(NULL, &lay, &ovr, BCT_PICTURE);
       bunny_blit(&pic->buffer, lay, NULL);
       bunny_delete_clipable(lay);
     }
 
-
   fnt->clipable.position.y = 5;
   bunny_draw(&fnt->clipable);
   bunny_blit(&pic->buffer, &fnt->clipable, NULL);
   bunny_delete_clipable(&fnt->clipable);
+
+  // Des images a mettre par dessus, sur le texte
+  for (int i = 0; bunny_configuration_getf(tbox, &ovr, "Overlay[%d]", i); ++i)
+    {
+      t_bunny_picture *lay = NULL;
+      bool		undertext = false;
+
+      bunny_configuration_getf(ovr, &undertext, "UnderText");
+      if (undertext)
+	continue ;
+      bunny_set_clipable_attribute(NULL, &lay, &ovr, BCT_PICTURE);
+      bunny_blit(&pic->buffer, lay, NULL);
+      bunny_delete_clipable(lay);
+    }
   return (EXIT_SUCCESS);
 }
 
