@@ -168,10 +168,9 @@ int			round_medal(t_bunny_configuration	*cnf,
 
   for (int i = 0; bunny_configuration_getf(tbox, &ovr, "Overlay[%d]", i); ++i)
     {
-      t_bunny_picture *lay;
-      
-      // On charge l'image depuis ovr...
-      
+      t_bunny_picture *lay = NULL;
+
+      bunny_set_clipable_attribute(NULL, &lay, &ovr, BCT_PICTURE);
       bunny_blit(&pic->buffer, lay, NULL);
       bunny_delete_clipable(lay);
     }
@@ -191,6 +190,7 @@ int			round_medal(t_bunny_configuration	*cnf,
 	{
 	  for (int i = 0; fnt->string[i]; ++i)
 	    ((char*)fnt->string)[i] = toupper(fnt->string[i]);
+	  fnt->string_len = strlen(fnt->string);
 	  bunny_draw(&fnt->clipable);
 	  bunny_blit(&pic->buffer, &fnt->clipable, NULL);
 	}

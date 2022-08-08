@@ -39,6 +39,7 @@ int		band_medal(t_bunny_configuration	*cnf,
     fnt->string = bunny_strdup(medal->label);
   else
     fnt->string = bunny_strdup(medal->name);
+  fnt->string_len = strlen(fnt->string);
   for (int i = 0; fnt->string[i]; ++i)
     ((char*)fnt->string)[i] = toupper(fnt->string[i]);
 

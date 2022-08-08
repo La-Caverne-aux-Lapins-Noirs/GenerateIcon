@@ -17,7 +17,7 @@
 
 [Medal
   Corner = 3
-  'Texture = "./carrelage.png"
+  Texture = "./res/carrelage.png"
   Rotation = 90
   BorderColor = 255, 0, 0
   BorderWidth = 0.15
@@ -50,7 +50,7 @@
   ]
   {Overlay
     [
-      RessourceFile = ""
+      RessourceFile = "./res/failed.png"
       ColorMask = 255, 255, 255
       Origin = 0, 0
     ]
