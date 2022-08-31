@@ -14,7 +14,10 @@ unsigned int	gl_colors[] =
    0xBB0B0B, // Rouge un peu fondé
    0x3A9D23, // Vert
    0x2C75FF, // Bleu
+   0xBB0BFF, // Violet
+   0x20E0E0, // Cyan
+   0xD0FFA0, // Jaune
    PINK2,
    0xFEFEE2, // Quasi blanc
-   0x040506 // Quasi noir
+   0x040506, // Quasi noir
   };

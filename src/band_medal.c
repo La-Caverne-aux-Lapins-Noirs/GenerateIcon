@@ -50,14 +50,16 @@ int		band_medal(t_bunny_configuration	*cnf,
   srand(res);
   for (int i = 0; i < NBRCELL(cols); ++i)
     cols[i] = gl_colors[rand() % NBRCELL(gl_colors)] | BLACK;
-  int		bands = rand() % 4 + 1;
+  int		bands = rand() % 4 + 2;
   int		x, w;
 
+  x = 0;
   bunny_clear(&pic->buffer, cols[rand() % NBRCELL(cols)]);
   for (int i = 0; i < bands; ++i)
     {
-      x = rand() % pic->buffer.width / 2 / bands;
-      w = rand() % (pic->buffer.width - x) / 2 / bands;
+      x += rand() % pic->buffer.width / 2 / bands;
+      w = rand() % pic->buffer.width / 2 / bands;
+      x += w;
       pic->clip_x_position = x;
       pic->clip_width = w;
       bunny_clear(&pic->buffer, cols[i + 1]);

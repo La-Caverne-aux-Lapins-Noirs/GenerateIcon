@@ -129,8 +129,8 @@ int			round_medal(t_bunny_configuration	*cnf,
   va->vertex[0].color = border_color.full;
   shape(pic, corner, va, &medmiddle, &texmiddle, NULL, border_color.full, 1.0 - 0.01, rot, &shift, &scale);
   // On fait l'interieur
-  va->vertex[0].color = inside_color.full;
-  shape(pic, corner, va, &medmiddle, &texmiddle, texture, middle_color.full, 1.0 - 0.01 - border_width, rot, &shift, &scale);
+  va->vertex[0].color = middle_color.full;
+  shape(pic, corner, va, &medmiddle, &texmiddle, texture, inside_color.full, 1.0 - 0.01 - border_width, rot, &shift, &scale);
 
   // L'icone
   if (icon != NULL)

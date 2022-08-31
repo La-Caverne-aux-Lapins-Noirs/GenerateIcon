@@ -31,6 +31,6 @@ int			round_medal(t_bunny_configuration	*cnf,
 				    t_bunny_picture		*pic,
 				    t_medal			*medal);
 
-extern unsigned int	gl_colors[6];
+extern unsigned int	gl_colors[9];
 
 #endif	/*	__GENICON_H__	*/
