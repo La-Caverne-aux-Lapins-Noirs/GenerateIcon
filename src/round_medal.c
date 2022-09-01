@@ -123,8 +123,8 @@ int			round_medal(t_bunny_configuration	*cnf,
   // pour ne pas faire que des formes régulières... comme "l'oeil" d'avant.
 
   // D'abord on fait la forme en noir
-  va->vertex[0].color = BLACK;
-  shape(pic, corner, va, &medmiddle, &texmiddle, NULL, BLACK, 1.0, rot, &shift, &scale);
+  va->vertex[0].color = ALPHA(border_color.argb[ALPHA_CMP], BLACK);
+  shape(pic, corner, va, &medmiddle, &texmiddle, NULL, va->vertex[0].color, 1.0, rot, &shift, &scale);
   // Ensuite on fait le boudin
   va->vertex[0].color = border_color.full;
   shape(pic, corner, va, &medmiddle, &texmiddle, NULL, border_color.full, 1.0 - 0.01, rot, &shift, &scale);
@@ -147,14 +147,16 @@ int			round_medal(t_bunny_configuration	*cnf,
       icon->position.x = pic->buffer.width / 2 + ishift.x;
       icon->position.y = pic->buffer.height / 2 + ishift.y;
       // Un léger contour noir à l'icone
-      icon->color_mask.full = BLACK;
+      if (bunny_color_configuration("Icon.Color", &icon->color_mask, tbox) != BD_OK)
+	icon->color_mask.full = WHITE;
+      icon->color_mask.full = ALPHA(icon->color_mask.argb[ALPHA_CMP], BLACK);
       icon->scale.x += 0.01;
       icon->scale.y += 0.01;
       bunny_blit(&pic->buffer, icon, NULL);
       // Puis l'authentique icone
       icon->scale.x -= 0.01;
       icon->scale.y -= 0.01;
-      if (bunny_color_configuration("Icon.Color", &icon->color_mask, tbox) == false)
+      if (bunny_color_configuration("Icon.Color", &icon->color_mask, tbox) != BD_OK)
 	icon->color_mask.full = WHITE;
       bunny_blit(&pic->buffer, icon, NULL);
 
