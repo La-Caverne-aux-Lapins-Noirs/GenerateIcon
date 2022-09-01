@@ -21,6 +21,15 @@ Then copy the following in /etc/init.d/xvfb
 
 ```
 #!/bin/sh
+### BEGIN INIT INFO
+# Provides:          xvfb
+# Required-Start:    $all
+# Required-Stop:
+# Default-Start:     2 3 4 5
+# Default-Stop:	     0 1 6
+# Short-Description: to use software that required a display without display
+### END INIT INFO
+
 XVFB=/usr/bin/Xvfb
 XVFBARGS=":1 -screen 0 1024x768x24 -ac +extension GLX +render -noreset -nolisten tcp"
 PIDFILE=/var/run/xvfb.pid
@@ -50,7 +59,7 @@ exit 0
 Then execute the following command:
 
 ```console
-sudo update-rc.d xvfb defaults
+sudo systemctl enable xvfb
 echo DISPLAY=":1" | sudo tee -a /etc/environment
 ```
 
