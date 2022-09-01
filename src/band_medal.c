@@ -17,7 +17,7 @@ int		band_medal(t_bunny_configuration	*cnf,
   t_bunny_configuration *tbox = NULL;
 
   // Dessin du texte
-    if (!bunny_configuration_getf(cnf, &tbox, "Medal"))
+  if (!bunny_configuration_getf(cnf, &tbox, "BandMedal"))
     {
       fprintf(stderr, "Missing BandMedal node in configuration.\n");
       return (EXIT_FAILURE);
