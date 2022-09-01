@@ -28,8 +28,27 @@ static char		*fetch_param(int	argc,
   return (NULL);
 }
 
-int		main(int			argc,
-		     char			**argv)
+static char		*merge(char		**wt,
+			       int		len)
+{
+  char			buffer[4096];
+  size_t		p;
+  int			i;
+  int			l;
+
+  if (len == 0)
+    return (NULL);
+  for (i = 0, p = 0; i < len && p < sizeof(buffer) - 1; ++i)
+    {
+      l = snprintf(&buffer[p], sizeof(buffer) - p - 1, "%s,", wt[i]);
+      p += l;
+    }
+  buffer[p - 1] = '\0';
+  return (bunny_strdup(&buffer[0]));
+}
+
+int			main(int		argc,
+			     char		**argv)
 {
   if (argc < 3)
     {
@@ -50,11 +69,16 @@ int		main(int			argc,
       return (EXIT_FAILURE);
     }
   t_medal	medal;
+  char		*specs[10];
+  int		spec = 0;
 
   medal.name = argv[2];
   medal.picfile = fetch_param(argc, argv, "-p");
-  medal.specificator = fetch_param(argc, argv, "-s");
   medal.label = fetch_param(argc, argv, "-l");
   medal.texfile = fetch_param(argc, argv, "-t");
+  for (int i = 0; i < argc; ++i)
+    if (strcmp(argv[i], "-s") == 0 && i + 1 < argc)
+      specs[spec++] = argv[++i];
+  medal.specificator = merge(&specs[0], spec);
   return (generate_icon(cnf, argv[1], &medal));
 }

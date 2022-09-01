@@ -59,15 +59,30 @@ int			round_medal(t_bunny_configuration	*cnf,
   if (medal->picfile)
     icon = bunny_load_picture(medal->picfile);
   // Dessin du texte
-  if (medal->specificator != NULL)
-    bunny_configuration_getf(cnf, &tbox, "Medal[%s]", medal->specificator);
-  else
-    bunny_configuration_getf(cnf, &tbox, "Medal");
-  if (!tbox)
+
+  if (!bunny_configuration_getf(cnf, &tbox, "Medal"))
     {
       fprintf(stderr, "Missing Medal node in configuration.\n");
       return (EXIT_FAILURE);
     }
+  if (medal->specificator != NULL)
+    {
+      t_bunny_configuration *spec;
+      const char *toks[2] = {",", NULL};
+      const char * const *spl = bunny_split(medal->specificator, toks, true);
+
+      for (int z = 0; spl[z]; ++z)
+	{
+	  if (!bunny_configuration_getf(cnf, &spec, "Medal[%s]", spl[z]))
+	    {
+	      fprintf(stderr, "Missing Medal[%s] node in configuration.\n", spl[z]);
+	      return (EXIT_FAILURE);
+	    }
+	  bunny_configuration_merge(1, tbox, spec);
+	}
+      bunny_delete_split(spl);
+    }
+
   t_bunny_vertex_array	*va = calloc(1, sizeof(struct bva));
   int			corner = 126;
   double		rot = 0;
