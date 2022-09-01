@@ -58,8 +58,8 @@ int			round_medal(t_bunny_configuration	*cnf,
   bunny_clear(&pic->buffer, 0);
   if (medal->picfile)
     icon = bunny_load_picture(medal->picfile);
-  // Dessin du texte
 
+  // Dessin du texte
   if (!bunny_configuration_getf(cnf, &tbox, "Medal"))
     {
       fprintf(stderr, "Missing Medal node in configuration.\n");
@@ -73,7 +73,7 @@ int			round_medal(t_bunny_configuration	*cnf,
 
       for (int z = 0; spl[z]; ++z)
 	{
-	  if (!bunny_configuration_getf(cnf, &spec, "Medal[%s]", spl[z]))
+	  if (!bunny_configuration_getf(cnf, &spec, "Medal.%s", spl[z]))
 	    {
 	      fprintf(stderr, "Missing Medal[%s] node in configuration.\n", spl[z]);
 	      return (EXIT_FAILURE);

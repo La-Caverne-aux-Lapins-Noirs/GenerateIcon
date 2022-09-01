@@ -17,14 +17,27 @@ int		band_medal(t_bunny_configuration	*cnf,
   t_bunny_configuration *tbox = NULL;
 
   // Dessin du texte
-  if (medal->specificator != NULL)
-    bunny_configuration_getf(cnf, &tbox, "BandMedal[%s]", medal->specificator);
-  else
-    bunny_configuration_getf(cnf, &tbox, "BandMedal");
-  if (!tbox)
+    if (!bunny_configuration_getf(cnf, &tbox, "Medal"))
     {
       fprintf(stderr, "Missing BandMedal node in configuration.\n");
       return (EXIT_FAILURE);
+    }
+  if (medal->specificator != NULL)
+    {
+      t_bunny_configuration *spec;
+      const char *toks[2] = {",", NULL};
+      const char * const *spl = bunny_split(medal->specificator, toks, true);
+
+      for (int z = 0; spl[z]; ++z)
+	{
+	  if (!bunny_configuration_getf(tbox, &spec, "BandMedal.%s", spl[z]))
+	    {
+	      fprintf(stderr, "Missing BandMedal[%s] node in configuration.\n", spl[z]);
+	      return (EXIT_FAILURE);
+	    }
+	  bunny_configuration_merge(1, tbox, spec);
+	}
+      bunny_delete_split(spl);
     }
 
   bunny_configuration_setf(tbox, (int)pic->buffer.height, "BoxSize[1]");
