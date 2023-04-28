@@ -30,9 +30,9 @@ int		band_medal(t_bunny_configuration	*cnf,
 
       for (int z = 0; spl[z]; ++z)
 	{
-	  if (!bunny_configuration_getf(tbox, &spec, "BandMedal.%s", spl[z]))
+	  if (!bunny_configuration_getf(cnf, &spec, "BandMedal.%s", spl[z]))
 	    {
-	      fprintf(stderr, "Missing BandMedal[%s] node in configuration.\n", spl[z]);
+	      fprintf(stderr, "Missing BandMedal.%s node in configuration.\n", spl[z]);
 	      return (EXIT_FAILURE);
 	    }
 	  bunny_configuration_merge(1, tbox, spec);

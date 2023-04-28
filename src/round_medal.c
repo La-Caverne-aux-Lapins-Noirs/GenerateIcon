@@ -7,8 +7,10 @@
 ** Medal Generator
 */
 
+#include		<strings.h>
 #include		<ctype.h>
 #include		<math.h>
+#include		<time.h>
 #include		"genicon.h"
 
 struct			bva
@@ -27,8 +29,17 @@ void			shape(t_bunny_picture			*pic,
 			      double				coef,
 			      double				rot,
 			      t_bunny_position			*shift,
-			      t_bunny_accurate_position		*scale)
+			      t_bunny_accurate_position		*scale,
+			      const char			*shap,
+			      double				rnd,
+			      double				rnd2)
 {
+  double		sun[2] = {0.9, 1.0};
+  double		spike[2] = {0.5, 1.0};
+  double		step = 0.45 / corner;
+
+  if (strcasecmp(shap, "noshape") == 0)
+    return ;
   for (int i = 0; i <= corner; ++i)
     {
       double		q = 2 * M_PI / corner;
@@ -37,8 +48,39 @@ void			shape(t_bunny_picture			*pic,
       double		cy = sin(q * i + rot) * scale->y;
 
       v->color = color;
-      v->pos.x = cx * medmiddle->x * coef + medmiddle->x + shift->x;
-      v->pos.y = cy * medmiddle->y * coef + medmiddle->y + shift->y;
+      v->pos.x = cx * medmiddle->x * coef;
+      v->pos.y = cy * medmiddle->y * coef;
+      if (strcasecmp(shap, "sun") == 0)
+	{
+	  v->pos.x *= sun[i % 2];
+	  v->pos.y *= sun[i % 2];
+	}
+      else if (strcasecmp(shap, "spike") == 0)
+	{
+	  v->pos.x *= spike[i % 2];
+	  v->pos.y *= spike[i % 2];
+	}
+      else if (strcasecmp(shap, "sinusoid") == 0)
+	{
+	  double	r = cos(rnd * 2 * M_PI * i / corner);
+
+	  v->pos.x *= r * rnd2 + (1.0 - rnd2);
+	  v->pos.y *= r * rnd2 + (1.0 - rnd2);
+	}
+      else if (strcasecmp(shap, "snail") == 0)
+	{
+	  v->pos.x *= step * i + 0.7;
+	  v->pos.y *= step * i + 0.7;
+	}
+      else if (strcasecmp(shap, "random") == 0)
+	{
+	  double	r = (rand() % 1000 / 1000.0) * rnd;
+
+	  v->pos.x *= (1.0 - rnd) + r;
+	  v->pos.y *= (1.0 - rnd) + r;
+	}
+      v->pos.x += medmiddle->x + shift->x;
+      v->pos.y += medmiddle->y + shift->y;
       if (texture)
 	{
 	  v->tex.x = cx * texmiddle->x + texmiddle->x;
@@ -55,6 +97,7 @@ int			round_medal(t_bunny_configuration	*cnf,
   t_bunny_configuration *tbox = NULL;
   t_bunny_picture	*icon = NULL;
 
+  srand(clock());
   bunny_clear(&pic->buffer, 0);
   if (medal->picfile)
     icon = bunny_load_picture(medal->picfile);
@@ -110,8 +153,18 @@ int			round_medal(t_bunny_configuration	*cnf,
   if (texture_file)
     if ((texture = bunny_load_picture(texture_file)))
       {
+	t_bunny_picture *tmppic = bunny_new_picture(texture->buffer.width, texture->buffer.height);
+
+	bunny_clear(&tmppic->buffer, TRANSPARENT);
 	texmiddle.x = texture->buffer.width / 2;
 	texmiddle.y = texture->buffer.height / 2;
+
+	// On redessine la texture sur la texture avec le masque,
+	// car le masque n'est pas pris en considération par set_geometry
+	if (bunny_color_configuration("ColorMask", &texture->color_mask, tbox))
+	  bunny_blit(&tmppic->buffer, texture, NULL);
+	bunny_delete_clipable(texture);
+	texture = tmppic;
       }
   if (corner < 3)
     corner = 3;
@@ -137,15 +190,64 @@ int			round_medal(t_bunny_configuration	*cnf,
   // Il serait sympathique de pouvoir préciser les coordonnées dans la conf
   // pour ne pas faire que des formes régulières... comme "l'oeil" d'avant.
 
-  // D'abord on fait la forme en noir
-  va->vertex[0].color = ALPHA(border_color.argb[ALPHA_CMP], BLACK);
-  shape(pic, corner, va, &medmiddle, &texmiddle, NULL, va->vertex[0].color, 1.0, rot, &shift, &scale);
-  // Ensuite on fait le boudin
-  va->vertex[0].color = border_color.full;
-  shape(pic, corner, va, &medmiddle, &texmiddle, NULL, border_color.full, 1.0 - 0.01, rot, &shift, &scale);
-  // On fait l'interieur
-  va->vertex[0].color = middle_color.full;
-  shape(pic, corner, va, &medmiddle, &texmiddle, texture, inside_color.full, 1.0 - 0.01 - border_width, rot, &shift, &scale);
+  const char *shap = "Regular";
+  double rnd = 10;
+  double rnd2 = 0.1;
+  bunny_configuration_getf(tbox, &shap, "Shape");
+  bunny_configuration_getf(tbox, &rnd, "ShapeConfiguration[0]");
+  bunny_configuration_getf(tbox, &rnd2, "ShapeConfiguration[1]");
+
+  int			dynrot = 1;
+  double		dynrotamp = 0;
+  bool			dynrotalpha = false;
+  t_bunny_picture	*curpic;
+
+  bunny_configuration_getf(tbox, &dynrot, "DynamicRotation[0]");
+  bunny_configuration_getf(tbox, &dynrotamp, "DynamicRotation[1]");
+  bunny_configuration_getf(tbox, &dynrotalpha, "DynamicRotation[2]");
+  dynrotamp = dynrotamp / 360.0 * (2 * M_PI);
+  if (dynrotalpha)
+    {
+      if ((curpic = bunny_new_picture(pic->buffer.width, pic->buffer.height)) == NULL)
+	return (EXIT_FAILURE);
+      bunny_clear(&curpic->buffer, TRANSPARENT);
+    }
+  else
+    curpic = pic;
+  for (int dr = 1; dr <= dynrot; ++dr)
+    {
+      double		dra = (dynrot - dr) * dynrotamp;
+
+      // D'abord on fait la forme en noir
+      va->vertex[0].color = ALPHA(border_color.argb[ALPHA_CMP], BLACK);
+      shape(curpic, corner, va, &medmiddle, &texmiddle, NULL,
+	    va->vertex[0].color, 1.0, rot - dra,
+	    &shift, &scale, shap, rnd, rnd2);
+      
+      // Ensuite on fait le boudin
+      va->vertex[0].color = border_color.full;
+      shape(curpic, corner, va, &medmiddle, &texmiddle, NULL,
+	    border_color.full, 1.0 - 0.01, rot - dra,
+	    &shift, &scale, shap, rnd, rnd2);
+      
+      // On fait l'interieur
+      va->vertex[0].color = middle_color.full;
+      shape(curpic, corner, va, &medmiddle, &texmiddle, texture,
+	    inside_color.full, 1.0 - 0.01 - border_width, rot - dra,
+	    &shift, &scale, shap, rnd, rnd2);
+
+      if (curpic != pic)
+	{
+	  if (dynrot > 1)
+	    curpic->color_mask.argb[ALPHA_CMP] = ((float)dr / dynrot) * 255;
+	  else
+	    curpic->color_mask.argb[ALPHA_CMP] = 255;
+	  bunny_blit(&pic->buffer, curpic, NULL);
+	  bunny_clear(&curpic->buffer, TRANSPARENT);
+	}
+    }
+  if (pic != curpic)
+    bunny_delete_clipable(curpic);
 
   // L'icone
   if (icon != NULL)
@@ -182,7 +284,7 @@ int			round_medal(t_bunny_configuration	*cnf,
 
   // Des images à mettre par dessus.
   t_bunny_configuration *ovr;
-
+  
   for (int i = 0; bunny_configuration_getf(tbox, &ovr, "Overlay[%d]", i); ++i)
     {
       t_bunny_picture *lay = NULL;
@@ -194,43 +296,45 @@ int			round_medal(t_bunny_configuration	*cnf,
       bunny_set_clipable_attribute(NULL, &lay, &ovr, BCT_PICTURE);
       bunny_blit(&pic->buffer, lay, NULL);
       bunny_delete_clipable(lay);
-    }
 
-  t_bunny_configuration *lab;
+      t_bunny_configuration *lab;
 
-  if (bunny_configuration_getf(tbox, &lab, "Label"))
-    {
-      t_bunny_font	*fnt = bunny_read_textbox(lab);
-
-      if (!fnt)
+      if (bunny_configuration_getf(tbox, &lab, "Label"))
 	{
-	  fprintf(stderr, "Cannot load Label node.\n");
-	  return (EXIT_FAILURE);
+	  t_bunny_font	*fnt = bunny_read_textbox(lab);
+	  
+	  if (!fnt)
+	    {
+	      fprintf(stderr, "Cannot load Label node.\n");
+	      return (EXIT_FAILURE);
+	    }
+	  if (medal->label)
+	    fnt->string = bunny_strdup(medal->label);
+	  if (fnt->string)
+	    {
+	      if (strcmp(fnt->string, "LABEL") == 0)
+		fnt->string = medal->name;
+	      for (int i = 0; fnt->string[i]; ++i)
+		((char*)fnt->string)[i] = toupper(fnt->string[i]);
+	      fnt->string_len = strlen(fnt->string);
+	      bunny_draw(&fnt->clipable);
+	      bunny_blit(&pic->buffer, &fnt->clipable, NULL);
+	    }
 	}
-      if (medal->label)
-	fnt->string = bunny_strdup(medal->label);
-      if (fnt->string)
+
+      // Images sur le texte
+      for (int i = 0; bunny_configuration_getf(tbox, &ovr, "Overlay[%d]", i); ++i)
 	{
-	  for (int i = 0; fnt->string[i]; ++i)
-	    ((char*)fnt->string)[i] = toupper(fnt->string[i]);
-	  fnt->string_len = strlen(fnt->string);
-	  bunny_draw(&fnt->clipable);
-	  bunny_blit(&pic->buffer, &fnt->clipable, NULL);
+	  t_bunny_picture *lay = NULL;
+	  bool		undertext = false;
+	  
+	  bunny_configuration_getf(ovr, &undertext, "UnderText");
+	  if (undertext)
+	    continue ;
+	  bunny_set_clipable_attribute(NULL, &lay, &ovr, BCT_PICTURE);
+	  bunny_blit(&pic->buffer, lay, NULL);
+	  bunny_delete_clipable(lay);
 	}
-    }
-
-  // Images sur le texte
-  for (int i = 0; bunny_configuration_getf(tbox, &ovr, "Overlay[%d]", i); ++i)
-    {
-      t_bunny_picture *lay = NULL;
-      bool		undertext = false;
-
-      bunny_configuration_getf(ovr, &undertext, "UnderText");
-      if (undertext)
-	continue ;
-      bunny_set_clipable_attribute(NULL, &lay, &ovr, BCT_PICTURE);
-      bunny_blit(&pic->buffer, lay, NULL);
-      bunny_delete_clipable(lay);
     }
 
   return (EXIT_SUCCESS);

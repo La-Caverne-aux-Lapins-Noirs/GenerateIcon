@@ -26,6 +26,7 @@
 [Medal
   Corner = 3
   Texture = "./res/carrelage.png"
+  ColorMask = 0, 255, 255, 128
   Rotation = 90
   BorderColor = 255, 0, 0
   BorderWidth = 0.15
@@ -37,7 +38,7 @@
 
   [Label
     RessourceFile="./impact.ttf"
-    String="SCHMOL"
+    String="LABEL"
     ColorMask = 255, 255, 255
     BoxSize=400,400
     Origin=0,0
