@@ -32,11 +32,13 @@ void			shape(t_bunny_picture			*pic,
 			      t_bunny_accurate_position		*scale,
 			      const char			*shap,
 			      double				rnd,
-			      double				rnd2)
+			      double				rnd2,
+			      t_bunny_configuration		*tbox)
 {
   double		sun[2] = {0.9, 1.0};
   double		spike[2] = {0.5, 1.0};
   double		step = 0.45 / corner;
+  t_bunny_accurate_position	arbitrary;
 
   if (strcasecmp(shap, "noshape") == 0)
     return ;
@@ -78,6 +80,33 @@ void			shape(t_bunny_picture			*pic,
 
 	  v->pos.x *= (1.0 - rnd) + r;
 	  v->pos.y *= (1.0 - rnd) + r;
+	}
+      else if (strcasecmp(shap, "arbitrary") == 0)
+	{
+	  const char *test = NULL;
+	  
+	  if (!bunny_configuration_getf(tbox, &arbitrary.x, "Coordinates[%d]", i * 2 + 0) ||
+	      !bunny_configuration_getf(tbox, &arbitrary.y, "Coordinates[%d]", i * 2 + 1))
+	    arbitrary.x = arbitrary.y = 0;
+	  if (!bunny_configuration_getf(tbox, &test, "PositionType"))
+	    test = "Absolute";
+	  if (strcasecmp(test, "relative"))
+	    {
+	      // de -100% a 100%
+	      v->pos.x = arbitrary.x * medmiddle->x * coef;
+	      v->pos.y = arbitrary.y * medmiddle->y * coef;
+	    }
+	  else
+	    {
+	      v->pos.x = arbitrary.x * coef;
+	      v->pos.y = arbitrary.y * coef;
+	    }
+	  double	ang = atan2(v->pos.y, v->pos.x);
+	  double	norm = sqrt(powf(v->pos.y, 2) + powf(v->pos.x, 2));
+
+	  ang += rot;
+	  v->pos.x = cos(ang) * norm;
+	  v->pos.y = sin(ang) * norm;
 	}
       v->pos.x += medmiddle->x + shift->x;
       v->pos.y += medmiddle->y + shift->y;
@@ -222,19 +251,19 @@ int			round_medal(t_bunny_configuration	*cnf,
       va->vertex[0].color = ALPHA(border_color.argb[ALPHA_CMP], BLACK);
       shape(curpic, corner, va, &medmiddle, &texmiddle, NULL,
 	    va->vertex[0].color, 1.0, rot - dra,
-	    &shift, &scale, shap, rnd, rnd2);
+	    &shift, &scale, shap, rnd, rnd2, tbox);
       
       // Ensuite on fait le boudin
       va->vertex[0].color = border_color.full;
       shape(curpic, corner, va, &medmiddle, &texmiddle, NULL,
 	    border_color.full, 1.0 - 0.01, rot - dra,
-	    &shift, &scale, shap, rnd, rnd2);
+	    &shift, &scale, shap, rnd, rnd2, tbox);
       
       // On fait l'interieur
       va->vertex[0].color = middle_color.full;
       shape(curpic, corner, va, &medmiddle, &texmiddle, texture,
 	    inside_color.full, 1.0 - 0.01 - border_width, rot - dra,
-	    &shift, &scale, shap, rnd, rnd2);
+	    &shift, &scale, shap, rnd, rnd2, tbox);
 
       if (curpic != pic)
 	{
@@ -296,45 +325,45 @@ int			round_medal(t_bunny_configuration	*cnf,
       bunny_set_clipable_attribute(NULL, &lay, &ovr, BCT_PICTURE);
       bunny_blit(&pic->buffer, lay, NULL);
       bunny_delete_clipable(lay);
+    }
 
-      t_bunny_configuration *lab;
+  t_bunny_configuration *lab;
 
-      if (bunny_configuration_getf(tbox, &lab, "Label"))
-	{
-	  t_bunny_font	*fnt = bunny_read_textbox(lab);
+  if (bunny_configuration_getf(tbox, &lab, "Label"))
+    {
+      t_bunny_font	*fnt = bunny_read_textbox(lab);
 	  
-	  if (!fnt)
-	    {
-	      fprintf(stderr, "Cannot load Label node.\n");
-	      return (EXIT_FAILURE);
-	    }
-	  if (medal->label)
-	    fnt->string = bunny_strdup(medal->label);
-	  if (fnt->string)
-	    {
-	      if (strcmp(fnt->string, "LABEL") == 0)
-		fnt->string = medal->name;
-	      for (int i = 0; fnt->string[i]; ++i)
-		((char*)fnt->string)[i] = toupper(fnt->string[i]);
-	      fnt->string_len = strlen(fnt->string);
-	      bunny_draw(&fnt->clipable);
-	      bunny_blit(&pic->buffer, &fnt->clipable, NULL);
-	    }
-	}
-
-      // Images sur le texte
-      for (int i = 0; bunny_configuration_getf(tbox, &ovr, "Overlay[%d]", i); ++i)
+      if (!fnt)
 	{
-	  t_bunny_picture *lay = NULL;
-	  bool		undertext = false;
-	  
-	  bunny_configuration_getf(ovr, &undertext, "UnderText");
-	  if (undertext)
-	    continue ;
-	  bunny_set_clipable_attribute(NULL, &lay, &ovr, BCT_PICTURE);
-	  bunny_blit(&pic->buffer, lay, NULL);
-	  bunny_delete_clipable(lay);
+	  fprintf(stderr, "Cannot load Label node.\n");
+	  return (EXIT_FAILURE);
 	}
+      if (medal->label)
+	fnt->string = bunny_strdup(medal->label);
+      if (fnt->string)
+	{
+	  if (strcmp(fnt->string, "LABEL") == 0)
+	    fnt->string = medal->name;
+	  for (int i = 0; fnt->string[i]; ++i)
+	    ((char*)fnt->string)[i] = toupper(fnt->string[i]);
+	  fnt->string_len = strlen(fnt->string);
+	  bunny_draw(&fnt->clipable);
+	  bunny_blit(&pic->buffer, &fnt->clipable, NULL);
+	}
+    }
+
+  // Images sur le texte
+  for (int i = 0; bunny_configuration_getf(tbox, &ovr, "Overlay[%d]", i); ++i)
+    {
+      t_bunny_picture *lay = NULL;
+      bool		undertext = false;
+	  
+      bunny_configuration_getf(ovr, &undertext, "UnderText");
+      if (undertext)
+	continue ;
+      bunny_set_clipable_attribute(NULL, &lay, &ovr, BCT_PICTURE);
+      bunny_blit(&pic->buffer, lay, NULL);
+      bunny_delete_clipable(lay);
     }
 
   return (EXIT_SUCCESS);
