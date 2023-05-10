@@ -83,24 +83,11 @@ void			shape(t_bunny_picture			*pic,
 	}
       else if (strcasecmp(shap, "arbitrary") == 0)
 	{
-	  const char *test = NULL;
-	  
 	  if (!bunny_configuration_getf(tbox, &arbitrary.x, "Coordinates[%d]", i * 2 + 0) ||
 	      !bunny_configuration_getf(tbox, &arbitrary.y, "Coordinates[%d]", i * 2 + 1))
 	    arbitrary.x = arbitrary.y = 0;
-	  if (!bunny_configuration_getf(tbox, &test, "PositionType"))
-	    test = "Absolute";
-	  if (strcasecmp(test, "relative"))
-	    {
-	      // de -100% a 100%
-	      v->pos.x = arbitrary.x * medmiddle->x * coef;
-	      v->pos.y = arbitrary.y * medmiddle->y * coef;
-	    }
-	  else
-	    {
-	      v->pos.x = arbitrary.x * coef;
-	      v->pos.y = arbitrary.y * coef;
-	    }
+	  v->pos.x = arbitrary.x * coef;
+	  v->pos.y = arbitrary.y * coef;
 	  double	ang = atan2(v->pos.y, v->pos.x);
 	  double	norm = sqrt(powf(v->pos.y, 2) + powf(v->pos.x, 2));
 
