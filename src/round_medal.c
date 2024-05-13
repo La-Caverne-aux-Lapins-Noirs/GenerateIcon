@@ -219,9 +219,23 @@ int			round_medal(t_bunny_configuration	*cnf,
   bool			dynrotalpha = false;
   t_bunny_picture	*curpic;
 
+  double		dyntransx = 0;
+  double		dyntransy = 0;
+
   bunny_configuration_getf(tbox, &dynrot, "DynamicRotation[0]");
   bunny_configuration_getf(tbox, &dynrotamp, "DynamicRotation[1]");
   bunny_configuration_getf(tbox, &dynrotalpha, "DynamicRotation[2]");
+
+  bunny_configuration_getf(tbox, &dyntransx, "DynamicTranslation[0]");
+  bunny_configuration_getf(tbox, &dyntransy, "DynamicTranslation[1]");
+  double		transdist = sqrt(powf(dyntransx, 2) + powf(dyntransy, 2));
+  double		iter = 1;
+
+  if (transdist > dynrot)
+    iter = transdist;
+  else
+    iter = dynrot;
+  
   dynrotamp = dynrotamp / 360.0 * (2 * M_PI);
   if (dynrotalpha)
     {
@@ -231,36 +245,47 @@ int			round_medal(t_bunny_configuration	*cnf,
     }
   else
     curpic = pic;
-  for (int dr = 1; dr <= dynrot; ++dr)
+  if (strcmp(shap, "Icon") == 0 && texture)
+    bunny_blit(&curpic->buffer, texture, NULL);
+  else
     {
-      double		dra = (dynrot - dr) * dynrotamp;
-
-      // D'abord on fait la forme en noir
-      va->vertex[0].color = ALPHA(border_color.argb[ALPHA_CMP], BLACK);
-      shape(curpic, corner, va, &medmiddle, &texmiddle, NULL,
-	    va->vertex[0].color, 1.0, rot - dra,
-	    &shift, &scale, shap, rnd, rnd2, tbox);
-      
-      // Ensuite on fait le boudin
-      va->vertex[0].color = border_color.full;
-      shape(curpic, corner, va, &medmiddle, &texmiddle, NULL,
-	    border_color.full, 1.0 - 0.01, rot - dra,
-	    &shift, &scale, shap, rnd, rnd2, tbox);
-      
-      // On fait l'interieur
-      va->vertex[0].color = middle_color.full;
-      shape(curpic, corner, va, &medmiddle, &texmiddle, texture,
-	    inside_color.full, 1.0 - 0.01 - border_width, rot - dra,
-	    &shift, &scale, shap, rnd, rnd2, tbox);
-
-      if (curpic != pic)
+      for (int dr = 0; dr <= iter; ++dr)
 	{
-	  if (dynrot > 1)
-	    curpic->color_mask.argb[ALPHA_CMP] = ((float)dr / dynrot) * 255;
-	  else
-	    curpic->color_mask.argb[ALPHA_CMP] = 255;
-	  bunny_blit(&pic->buffer, curpic, NULL);
-	  bunny_clear(&curpic->buffer, TRANSPARENT);
+	  t_bunny_position	tshift = shift;
+	  double		dra = (1.0 - (double)dr / iter) * dynrotamp;
+	  double		dtx = (1.0 - (double)dr / iter) * dyntransx;
+	  double		dty = (1.0 - (double)dr / iter) * dyntransy;
+
+	  tshift.x += dtx;
+	  tshift.y += dty;
+
+	  // D'abord on fait la forme en noir
+	  va->vertex[0].color = ALPHA(border_color.argb[ALPHA_CMP], BLACK);
+	  shape(curpic, corner, va, &medmiddle, &texmiddle, NULL,
+		va->vertex[0].color, 1.0, rot - dra,
+		&tshift, &scale, shap, rnd, rnd2, tbox);
+      
+	  // Ensuite on fait le boudin
+	  va->vertex[0].color = border_color.full;
+	  shape(curpic, corner, va, &medmiddle, &texmiddle, NULL,
+		border_color.full, 1.0 - 0.01, rot - dra,
+		&tshift, &scale, shap, rnd, rnd2, tbox);
+      
+	  // On fait l'interieur
+	  va->vertex[0].color = middle_color.full;
+	  shape(curpic, corner, va, &medmiddle, &texmiddle, texture,
+		inside_color.full, 1.0 - 0.01 - border_width, rot - dra,
+		&tshift, &scale, shap, rnd, rnd2, tbox);
+
+	  if (curpic != pic)
+	    {
+	      if (dynrot > 1)
+		curpic->color_mask.argb[ALPHA_CMP] = ((float)dr / dynrot) * 255;
+	      else
+		curpic->color_mask.argb[ALPHA_CMP] = 255;
+	      bunny_blit(&pic->buffer, curpic, NULL);
+	      bunny_clear(&curpic->buffer, TRANSPARENT);
+	    }
 	}
     }
   if (pic != curpic)
